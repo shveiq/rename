@@ -377,7 +377,7 @@ class FileRepository {
       filePath: paths.iosGeneratedConfig,
       content: contentLineByLine.join('\n'),
     );
-    logger.i('IOS Application Revision changed successfully to : $appVersion');
+    logger.i('IOS Application Revision changed successfully to : $appBuild');
     return writtenFile;
   }
 
