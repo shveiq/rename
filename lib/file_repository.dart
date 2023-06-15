@@ -66,17 +66,18 @@ class Paths {
   final String androidManifest;
   final String androidDebugManifest;
   final String androidProfileManifest;
+  final String androidAppBuildGradle;
+  final String androidKotlin;
   final String pubspecYaml;
   final String iosInfoPlist;
-  final String androidAppBuildGradle;
   final String iosProjectPbxproj;
+  final String iosGeneratedConfig;
   final String macosAppInfoxproj;
   final String launcherIcon;
   final String linuxCMakeLists;
   final String linuxAppCpp;
   final String webApp;
   final String windowsApp;
-  final String androidKotlin;
 }
 
 class FileRepository {
