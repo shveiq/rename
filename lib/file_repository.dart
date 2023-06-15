@@ -13,6 +13,7 @@ class Paths {
     required this.androidKotlin,
     required this.iosInfoPlist,
     required this.iosProjectPbxproj,
+    required this.iosGeneratedConfig,
     required this.launcherIcon,
     required this.linuxAppCpp,
     required this.linuxCMakeLists,
@@ -26,14 +27,15 @@ class Paths {
       return Paths(
         pubspecYaml: 'pubspec.yaml',
         iosInfoPlist: 'ios/Runner/Info.plist',
-        androidAppBuildGradle: 'android/app/build.gradle',
         iosProjectPbxproj: 'ios/Runner.xcodeproj/project.pbxproj',
+        iosGeneratedConfig: 'ios/Flutter/Generated.xcconfig',
         macosAppInfoxproj: 'macos/Runner/Configs/AppInfo.xcconfig',
         launcherIcon: 'assets/images/launcherIcon.png',
         linuxCMakeLists: 'linux/CMakeLists.txt',
         linuxAppCpp: 'linux/my_application.cc',
         windowsApp: 'web/index.html',
         androidManifest: 'android/app/src/main/AndroidManifest.xml',
+        androidAppBuildGradle: 'android/app/build.gradle',
         androidDebugManifest: 'android/app/src/debug/AndroidManifest.xml',
         androidProfileManifest: 'android/app/src/profile/AndroidManifest.xml',
         androidKotlin: 'android/app/src/main/kotlin',
@@ -41,22 +43,23 @@ class Paths {
       );
     } else {
       return Paths(
-        androidManifest: '.\\android\\app\\src\\main\\AndroidManifest.xml',
-        androidDebugManifest:
-            '.\\android\\app\\src\\debug\\AndroidManifest.xml',
-        androidProfileManifest:
-            '.\\android\\app\\src\\profile\\AndroidManifest.xml',
-        androidKotlin: '',
         pubspecYaml: '.\\pubspec.yaml',
         iosInfoPlist: '.\\ios\\Runner\\Info.plist',
-        androidAppBuildGradle: '.\\android\\app\\build.gradle',
         iosProjectPbxproj: '.\\ios\\Runner.xcodeproj\\project.pbxproj',
+        iosGeneratedConfig: '.\\ios\\Flutter\\Generated.xcconfig',
         macosAppInfoxproj: '.\\macos\\Runner\\Configs\\AppInfo.xcconfig',
         launcherIcon: '.\\assets\\images\\launcherIcon.png',
         linuxCMakeLists: '.\\linux\\CMakeLists.txt',
         linuxAppCpp: '.\\linux\\my_application.cc',
-        webApp: '.\\linux\\my_application.cc',
         windowsApp: '.\\web\\index.html',
+        androidManifest: '.\\android\\app\\src\\main\\AndroidManifest.xml',
+        androidAppBuildGradle: '.\\android\\app\\build.gradle',
+        androidDebugManifest:
+        '.\\android\\app\\src\\debug\\AndroidManifest.xml',
+        androidProfileManifest:
+        '.\\android\\app\\src\\profile\\AndroidManifest.xml',
+        androidKotlin: '.\\android\\app\\src\\main\\kotlin',
+        webApp: '.\\linux\\my_application.cc',
       );
     }
   }
@@ -318,6 +321,70 @@ class FileRepository {
       },
     );
 
+    return null;
+  }
+
+  Future<File?> changeIosApplicationVersion({String? appVersion}) async {
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.iosGeneratedConfig,
+    );
+    if (checkFileExists(contentLineByLine)) {
+      logger.w('''
+      Ios BundleId could not be changed because,
+      The related file could not be found in that path:  ${paths.iosGeneratedConfig}
+      ''');
+      return null;
+    }
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      if (contentLineByLine[i].contains('FLUTTER_BUILD_NAME')) {
+        contentLineByLine[i] = 'FLUTTER_BUILD_NAME=$appVersion';
+      }
+    }
+    var writtenFile = await writeFile(
+      filePath: paths.iosGeneratedConfig,
+      content: contentLineByLine.join('\n'),
+    );
+    logger.i('IOS Application Version changed successfully to : $appVersion');
+    return writtenFile;
+  }
+
+  Future<void> changeMacOsApplicationVersion({String? appVersion}) async {
+    return null;
+  }
+
+  Future<void> changeAndroidApplicationVersion({String? appVersion}) async {
+    return null;
+  }
+
+  Future<File?> changeIosApplicationBuild({String? appBuild}) async {
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.iosGeneratedConfig,
+    );
+    if (checkFileExists(contentLineByLine)) {
+      logger.w('''
+      Ios BundleId could not be changed because,
+      The related file could not be found in that path:  ${paths.iosGeneratedConfig}
+      ''');
+      return null;
+    }
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      if (contentLineByLine[i].contains('FLUTTER_BUILD_NUMBER')) {
+        contentLineByLine[i] = 'FLUTTER_BUILD_NUMBER=$appBuild';
+      }
+    }
+    var writtenFile = await writeFile(
+      filePath: paths.iosGeneratedConfig,
+      content: contentLineByLine.join('\n'),
+    );
+    logger.i('IOS Application Revision changed successfully to : $appVersion');
+    return writtenFile;
+  }
+
+  Future<void> changeMacOsApplicationBuild({String? appBuild}) async {
+    return null;
+  }
+
+  Future<void> changeAndroidApplicationBuild({String? appBuild}) async {
     return null;
   }
 

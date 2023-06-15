@@ -11,6 +11,8 @@ const pubspec = 'pubspec';
 const target = 'target';
 const appname = 'appname';
 const bundleId = 'bundleId';
+const appVersion = 'appversion';
+const appBuild = 'appbuild';
 const launcherIcon = 'launcherIcon';
 const help = 'help';
 
@@ -21,6 +23,8 @@ final argParser = ArgParser()
       help: 'Set which platforms to target.')
   ..addOption(appname, abbr: 'a', help: 'Sets the name of the app.')
   ..addOption(bundleId, abbr: 'b', help: 'Sets the bundle id.')
+  ..addOption(appVersion, abbr: 'v', help: "Sets app's version")
+  ..addOption(appBuild, abbr: 'r', help: "Set app's revision")
   ..addFlag(
     pubspec,
     abbr: 'p',
@@ -54,6 +58,12 @@ void main(List<String> arguments) async {
     }
     if (results[bundleId] != null) {
       await rename.changeBundleId(results[bundleId], platforms);
+    }
+    if (results[appVersion] != null) {
+      await rename.changeApplicationVersion(results[appVersion], platforms);
+    }
+    if (results[appBuild] != null) {
+      await rename.changeApplicationBuild(results[appBuild], platforms);
     }
   } on FormatException catch (e) {
     print(e.message);
