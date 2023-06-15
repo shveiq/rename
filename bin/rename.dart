@@ -6,7 +6,7 @@ const macOS = 'macOS';
 const ios = 'ios';
 const linux = 'linux';
 const web = 'web';
-const windows = 'windows';
+const pubspec = 'pubspec';
 
 const target = 'target';
 const appname = 'appname';
@@ -17,10 +17,16 @@ const help = 'help';
 final argParser = ArgParser()
   ..addMultiOption(target,
       abbr: 't',
-      allowed: [android, macOS, ios, linux, web, windows],
+      allowed: [android, macOS, ios, linux, web],
       help: 'Set which platforms to target.')
   ..addOption(appname, abbr: 'a', help: 'Sets the name of the app.')
   ..addOption(bundleId, abbr: 'b', help: 'Sets the bundle id.')
+  ..addFlag(
+    pubspec,
+    abbr: 'p',
+    help: 'Sets the name of the app in the pubspec.yaml file.',
+    negatable: false,
+  )
   ..addFlag(help, abbr: 'h', help: 'Shows help.', negatable: false);
 
 void main(List<String> arguments) async {
@@ -38,11 +44,13 @@ void main(List<String> arguments) async {
       if (targets.contains(ios)) rename.Platform.ios,
       if (targets.contains(linux)) rename.Platform.linux,
       if (targets.contains(web)) rename.Platform.web,
-      if (targets.contains(windows)) rename.Platform.windows,
     };
 
     if (results[appname] != null) {
       await rename.changeAppName(results[appname], platforms);
+      if (results[pubspec] == true) {
+        await rename.changePubspec(results[appname]);
+      }
     }
     if (results[bundleId] != null) {
       await rename.changeBundleId(results[bundleId], platforms);

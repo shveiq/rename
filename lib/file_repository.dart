@@ -2,46 +2,93 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:logger/logger.dart';
+import 'package:recase/recase.dart';
+
+class Paths {
+  Paths({
+    required this.androidAppBuildGradle,
+    required this.androidDebugManifest,
+    required this.androidManifest,
+    required this.androidProfileManifest,
+    required this.androidKotlin,
+    required this.iosInfoPlist,
+    required this.iosProjectPbxproj,
+    required this.launcherIcon,
+    required this.linuxAppCpp,
+    required this.linuxCMakeLists,
+    required this.macosAppInfoxproj,
+    required this.pubspecYaml,
+    required this.webApp,
+    required this.windowsApp,
+  });
+  factory Paths.getInstance() {
+    if (Platform.isMacOS || Platform.isLinux) {
+      return Paths(
+        pubspecYaml: 'pubspec.yaml',
+        iosInfoPlist: 'ios/Runner/Info.plist',
+        androidAppBuildGradle: 'android/app/build.gradle',
+        iosProjectPbxproj: 'ios/Runner.xcodeproj/project.pbxproj',
+        macosAppInfoxproj: 'macos/Runner/Configs/AppInfo.xcconfig',
+        launcherIcon: 'assets/images/launcherIcon.png',
+        linuxCMakeLists: 'linux/CMakeLists.txt',
+        linuxAppCpp: 'linux/my_application.cc',
+        windowsApp: 'web/index.html',
+        androidManifest: 'android/app/src/main/AndroidManifest.xml',
+        androidDebugManifest: 'android/app/src/debug/AndroidManifest.xml',
+        androidProfileManifest: 'android/app/src/profile/AndroidManifest.xml',
+        androidKotlin: 'android/app/src/main/kotlin',
+        webApp: 'linux/my_application.cc',
+      );
+    } else {
+      return Paths(
+        androidManifest: '.\\android\\app\\src\\main\\AndroidManifest.xml',
+        androidDebugManifest:
+            '.\\android\\app\\src\\debug\\AndroidManifest.xml',
+        androidProfileManifest:
+            '.\\android\\app\\src\\profile\\AndroidManifest.xml',
+        androidKotlin: '',
+        pubspecYaml: '.\\pubspec.yaml',
+        iosInfoPlist: '.\\ios\\Runner\\Info.plist',
+        androidAppBuildGradle: '.\\android\\app\\build.gradle',
+        iosProjectPbxproj: '.\\ios\\Runner.xcodeproj\\project.pbxproj',
+        macosAppInfoxproj: '.\\macos\\Runner\\Configs\\AppInfo.xcconfig',
+        launcherIcon: '.\\assets\\images\\launcherIcon.png',
+        linuxCMakeLists: '.\\linux\\CMakeLists.txt',
+        linuxAppCpp: '.\\linux\\my_application.cc',
+        webApp: '.\\linux\\my_application.cc',
+        windowsApp: '.\\web\\index.html',
+      );
+    }
+  }
+  final String androidManifest;
+  final String androidDebugManifest;
+  final String androidProfileManifest;
+  final String pubspecYaml;
+  final String iosInfoPlist;
+  final String androidAppBuildGradle;
+  final String iosProjectPbxproj;
+  final String macosAppInfoxproj;
+  final String launcherIcon;
+  final String linuxCMakeLists;
+  final String linuxAppCpp;
+  final String webApp;
+  final String windowsApp;
+  final String androidKotlin;
+}
 
 class FileRepository {
   late Logger logger;
-  String androidManifestPath =
-      '.\\android\\app\\src\\main\\AndroidManifest.xml';
-  String iosInfoPlistPath = '.\\ios\\Runner\\Info.plist';
-  String androidAppBuildGradlePath = '.\\android\\app\\build.gradle';
-  String iosProjectPbxprojPath = '.\\ios\\Runner.xcodeproj\\project.pbxproj';
-  String macosAppInfoxprojPath = '.\\macos\\Runner\\Configs\\AppInfo.xcconfig';
-  String launcherIconPath = '.\\assets\\images\\launcherIcon.png';
-  String linuxCMakeListsPath = '.\\linux\\CMakeLists.txt';
-  String linuxAppCppPath = '.\\linux\\my_application.cc';
-  String webAppPath = '.\\web\\index.html';
-  String windowsAppPath = '.\\windows\\runner\\main.cpp';
-  String windowsAppRCPath = '.\\windows\\runner\\Runner.rc';
-
+  final paths = Paths.getInstance();
   FileRepository() {
     logger = Logger(filter: ProductionFilter());
-    if (Platform.isMacOS || Platform.isLinux) {
-      androidManifestPath = 'android/app/src/main/AndroidManifest.xml';
-      iosInfoPlistPath = 'ios/Runner/Info.plist';
-      androidAppBuildGradlePath = 'android/app/build.gradle';
-      iosProjectPbxprojPath = 'ios/Runner.xcodeproj/project.pbxproj';
-      macosAppInfoxprojPath = 'macos/Runner/Configs/AppInfo.xcconfig';
-      launcherIconPath = 'assets/images/launcherIcon.png';
-      linuxCMakeListsPath = 'linux/CMakeLists.txt';
-      linuxAppCppPath = 'linux/my_application.cc';
-      webAppPath = 'web/index.html';
-      windowsAppPath = 'windows/runner/main.cpp';
-      windowsAppRCPath = 'windows/runner/Runner.rc';
-    }
   }
 
-  Future<List<String?>?> readFileAsLineByline(
-      {required String filePath}) async {
+  List<String?> readFileAsLineByline({required String filePath}) {
     try {
-      var fileAsString = await File(filePath).readAsString();
+      var fileAsString = File(filePath).readAsStringSync();
       return fileAsString.split('\n');
     } catch (e) {
-      return null;
+      return [];
     }
   }
 
@@ -49,42 +96,71 @@ class FileRepository {
     return File(filePath).writeAsString(content);
   }
 
+  Future<void> readWriteFile({
+    required String filePath,
+    required String Function(String content) onContentLine,
+    required String fileNotExistsInfo,
+    required String changedToInfo,
+    bool throwIfNotExists = true,
+  }) async {
+    final contentLineByLine = readFileAsLineByline(
+      filePath: filePath,
+    );
+    if (throwIfNotExists && checkFileExists(contentLineByLine)) {
+      logger.w('''
+      $fileNotExistsInfo could not be changed because,
+      The related file could not be found in that path:  $filePath
+      ''');
+      return null;
+    }
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      final contentLine = contentLineByLine[i] ?? '';
+      contentLineByLine[i] = onContentLine(contentLine);
+    }
+    await writeFile(
+      filePath: filePath,
+      content: contentLineByLine.join('\n'),
+    );
+    logger.i('$fileNotExistsInfo changed successfully to : $changedToInfo');
+  }
+
   Future<String?> getIosBundleId() async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: iosProjectPbxprojPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.iosProjectPbxproj,
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       Ios BundleId could not be changed because,
-      The related file could not be found in that path:  $iosProjectPbxprojPath
+      The related file could not be found in that path:  ${paths.iosProjectPbxproj}
       ''');
       return null;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('PRODUCT_BUNDLE_IDENTIFIER')) {
         return (contentLineByLine[i] as String).split('=').last.trim();
       }
     }
+    return null;
   }
 
   Future<File?> changeIosBundleId({String? bundleId}) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: iosProjectPbxprojPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.iosProjectPbxproj,
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       Ios BundleId could not be changed because,
-      The related file could not be found in that path:  $iosProjectPbxprojPath
+      The related file could not be found in that path:  ${paths.iosProjectPbxproj}
       ''');
       return null;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('PRODUCT_BUNDLE_IDENTIFIER')) {
         contentLineByLine[i] = '				PRODUCT_BUNDLE_IDENTIFIER = $bundleId;';
       }
     }
     var writtenFile = await writeFile(
-      filePath: iosProjectPbxprojPath,
+      filePath: paths.iosProjectPbxproj,
       content: contentLineByLine.join('\n'),
     );
     logger.i('IOS BundleIdentifier changed successfully to : $bundleId');
@@ -92,41 +168,42 @@ class FileRepository {
   }
 
   Future<String?> getMacOsBundleId() async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: macosAppInfoxprojPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: '${paths.macosAppInfoxproj}',
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       macOS BundleId could not be changed because,
-      The related file could not be found in that path:  $macosAppInfoxprojPath
+      The related file could not be found in that path: ${paths.macosAppInfoxproj}
       ''');
       return null;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('PRODUCT_BUNDLE_IDENTIFIER')) {
         return (contentLineByLine[i] as String).split('=').last.trim();
       }
     }
+    return null;
   }
 
   Future<File?> changeMacOsBundleId({String? bundleId}) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: macosAppInfoxprojPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.macosAppInfoxproj,
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       macOS BundleId could not be changed because,
-      The related file could not be found in that path:  $macosAppInfoxprojPath
+      The related file could not be found in that path:  ${paths.macosAppInfoxproj}
       ''');
       return null;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('PRODUCT_BUNDLE_IDENTIFIER')) {
         contentLineByLine[i] = 'PRODUCT_BUNDLE_IDENTIFIER = $bundleId;';
       }
     }
     var writtenFile = await writeFile(
-      filePath: macosAppInfoxprojPath,
+      filePath: paths.macosAppInfoxproj,
       content: contentLineByLine.join('\n'),
     );
     logger.i('MacOS BundleIdentifier changed successfully to : $bundleId');
@@ -134,85 +211,167 @@ class FileRepository {
   }
 
   Future<String?> getAndroidBundleId() async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: androidAppBuildGradlePath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: 'androidAppBuildGradlePath',
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       Android BundleId could not be changed because,
-      The related file could not be found in that path:  $androidAppBuildGradlePath
+      The related file could not be found in that path:  ${paths.androidAppBuildGradle}
       ''');
       return null;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('applicationId')) {
         return (contentLineByLine[i] as String).split('"').elementAt(1).trim();
       }
     }
+    return null;
   }
 
-  Future<File?> changeAndroidBundleId({String? bundleId}) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: androidAppBuildGradlePath,
+  Future<void> changeAndroidBundleId({String? bundleId}) async {
+    if (bundleId == null) return;
+
+    await readWriteFile(
+      changedToInfo: bundleId,
+      fileNotExistsInfo: 'Android Gradle BundleId',
+      filePath: paths.androidAppBuildGradle,
+      onContentLine: (contentLine) {
+        if (contentLine.contains('applicationId')) {
+          return '        applicationId \"$bundleId\"';
+        }
+        return contentLine;
+      },
     );
-    if (checkFileExists(contentLineByLine)) {
-      logger.w('''
-      Android BundleId could not be changed because,
-      The related file could not be found in that path:  $androidAppBuildGradlePath
-      ''');
-      return null;
-    }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
-      if (contentLineByLine[i].contains('applicationId')) {
-        contentLineByLine[i] = '        applicationId \"$bundleId\"';
-        break;
+
+    await readWriteFile(
+      changedToInfo: bundleId,
+      fileNotExistsInfo: 'Android Main Manifest BundleId',
+      filePath: paths.androidManifest,
+      onContentLine: (contentLine) {
+        if (contentLine.contains('package')) {
+          return '        package=\"$bundleId\"';
+        }
+        return contentLine;
+      },
+    );
+
+    await readWriteFile(
+      changedToInfo: bundleId,
+      fileNotExistsInfo: 'Android Debug Manifest BundleId',
+      filePath: paths.androidDebugManifest,
+      onContentLine: (contentLine) {
+        if (contentLine.contains('package')) {
+          return '        package=\"$bundleId\"';
+        }
+        return contentLine;
+      },
+    );
+    await readWriteFile(
+      changedToInfo: bundleId,
+      fileNotExistsInfo: 'Android Profile Manifest BundleId',
+      filePath: paths.androidProfileManifest,
+      onContentLine: (contentLine) {
+        if (contentLine.contains('package')) {
+          return '        package=\"$bundleId\"';
+        }
+        return contentLine;
+      },
+    );
+
+    // find kotlin activity
+    final files = Directory(paths.androidKotlin).listSync();
+    String findKotlinActivityPath(final List<FileSystemEntity> files) {
+      for (final file in files) {
+        final stat = file.statSync();
+        final type = stat.type;
+        final fileName = file.path.split('/').last;
+        if (type == FileSystemEntityType.directory) {
+          return findKotlinActivityPath(Directory(file.path).listSync());
+        } else if (type == FileSystemEntityType.file &&
+            fileName == 'MainActivity.kt') {
+          return file.path;
+        }
       }
+      return '';
     }
-    var writtenFile = await writeFile(
-      filePath: androidAppBuildGradlePath,
-      content: contentLineByLine.join('\n'),
+
+    final kotlinFilePath = findKotlinActivityPath(files);
+    if (kotlinFilePath.isEmpty) {
+      logger.w('''
+        Kotlin Activity not found.
+        The related file could not be found in folders 
+        for that path:  ${paths.androidKotlin}
+      ''');
+      return;
+    }
+
+    await readWriteFile(
+      changedToInfo: bundleId,
+      fileNotExistsInfo: 'pubspec.yaml',
+      filePath: kotlinFilePath,
+      onContentLine: (contentLine) {
+        if (contentLine.startsWith('package')) {
+          return 'package $bundleId';
+        }
+        return contentLine;
+      },
     );
-    logger.i('Android bundleId changed successfully to : $bundleId');
-    return writtenFile;
+
+    return null;
+  }
+
+  Future<void> changePubspec({required final String appName}) async {
+    await readWriteFile(
+      changedToInfo: appName,
+      fileNotExistsInfo: 'pubspec.yaml',
+      filePath: paths.pubspecYaml,
+      onContentLine: (contentLine) {
+        if (contentLine.startsWith('name:')) {
+          return 'name: ${appName.snakeCase}';
+        }
+        return contentLine;
+      },
+    );
   }
 
   Future<String?> getLinuxBundleId() async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: linuxCMakeListsPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.linuxCMakeLists,
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       Linux BundleId could not be changed because,
-      The related file could not be found in that path:  $linuxCMakeListsPath
+      The related file could not be found in that path:  ${paths.linuxCMakeLists}
       ''');
       return null;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('set(APPLICATION_ID')) {
         return (contentLineByLine[i] as String).split('"').elementAt(1).trim();
-        ;
       }
     }
+    return null;
   }
 
   Future<File?> changeLinuxBundleId({String? bundleId}) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: linuxCMakeListsPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.linuxCMakeLists,
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       Linux BundleId could not be changed because,
-      The related file could not be found in that path:  $linuxCMakeListsPath
+      The related file could not be found in that path:  ${paths.linuxCMakeLists}
       ''');
       return null;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('set(APPLICATION_ID')) {
         contentLineByLine[i] = 'set(APPLICATION_ID \"$bundleId\")';
       }
     }
     var writtenFile = await writeFile(
-      filePath: linuxCMakeListsPath,
+      filePath: paths.linuxCMakeLists,
       content: contentLineByLine.join('\n'),
     );
     logger.i('Linux BundleIdentifier changed successfully to : $bundleId');
@@ -220,24 +379,24 @@ class FileRepository {
   }
 
   Future<File?> changeIosAppName(String? appName) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: iosInfoPlistPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.iosInfoPlist,
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       Ios AppName could not be changed because,
-      The related file could not be found in that path:  $iosInfoPlistPath
+      The related file could not be found in that path:  ${paths.iosInfoPlist}
       ''');
       return null;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('<key>CFBundleName</key>')) {
         contentLineByLine[i + 1] = '\t<string>$appName</string>\r';
         break;
       }
     }
 
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('<key>CFBundleDisplayName</key>')) {
         contentLineByLine[i + 1] = '\t<string>$appName</string>\r';
         break;
@@ -245,7 +404,7 @@ class FileRepository {
     }
 
     var writtenFile = await writeFile(
-      filePath: iosInfoPlistPath,
+      filePath: paths.iosInfoPlist,
       content: contentLineByLine.join('\n'),
     );
     logger.i('IOS appname changed successfully to : $appName');
@@ -253,24 +412,24 @@ class FileRepository {
   }
 
   Future<File?> changeMacOsAppName(String? appName) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: macosAppInfoxprojPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.macosAppInfoxproj,
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       macOS AppName could not be changed because,
-      The related file could not be found in that path:  $macosAppInfoxprojPath
+      The related file could not be found in that path:  ${paths.macosAppInfoxproj}
       ''');
       return null;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('PRODUCT_NAME')) {
         contentLineByLine[i] = 'PRODUCT_NAME = $appName;';
         break;
       }
     }
     var writtenFile = await writeFile(
-      filePath: macosAppInfoxprojPath,
+      filePath: paths.macosAppInfoxproj,
       content: contentLineByLine.join('\n'),
     );
     logger.i('MacOS appname changed successfully to : $appName');
@@ -278,24 +437,24 @@ class FileRepository {
   }
 
   Future<File?> changeAndroidAppName(String? appName) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: androidManifestPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.androidManifest,
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       Android AppName could not be changed because,
-      The related file could not be found in that path:  $androidManifestPath
+      The related file could not be found in that path:  ${paths.androidManifest}
       ''');
       return null;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('android:label=')) {
         contentLineByLine[i] = '        android:label=\"$appName\"';
         break;
       }
     }
     var writtenFile = await writeFile(
-      filePath: androidManifestPath,
+      filePath: paths.androidManifest,
       content: contentLineByLine.join('\n'),
     );
     logger.i('Android appname changed successfully to : $appName');
@@ -303,17 +462,17 @@ class FileRepository {
   }
 
   Future<bool> changeLinuxCppName(String? appName, String oldAppName) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: linuxAppCppPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.linuxAppCpp,
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       Linux AppName could not be changed because,
-      The related file could not be found in that path:  $linuxAppCppPath
+      The related file could not be found in that path:  ${paths.linuxAppCpp}
       ''');
       return false;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       contentLineByLine[i] =
           contentLineByLine[i].replaceAll(oldAppName, appName);
     }
@@ -321,18 +480,18 @@ class FileRepository {
   }
 
   Future<File?> changeLinuxAppName(String? appName) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: linuxCMakeListsPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.linuxCMakeLists,
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       Linux AppName could not be changed because,
-      The related file could not be found in that path:  $linuxCMakeListsPath
+      The related file could not be found in that path:  ${paths.linuxCMakeLists}
       ''');
       return null;
     }
     String? oldAppName;
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].startsWith('set(BINARY_NAME')) {
         oldAppName = RegExp(r'set\(BINARY_NAME "(\w+)"\)')
             .firstMatch(contentLineByLine[i])
@@ -342,7 +501,7 @@ class FileRepository {
       }
     }
     var writtenFile = await writeFile(
-      filePath: linuxCMakeListsPath,
+      filePath: paths.linuxCMakeLists,
       content: contentLineByLine.join('\n'),
     );
     if (oldAppName != null) {
@@ -356,46 +515,51 @@ class FileRepository {
 
   // ignore: missing_return
   Future<String?> getCurrentIosAppName() async {
-    var contentLineByLine = await (readFileAsLineByline(
-      filePath: iosInfoPlistPath,
-    ) as FutureOr<List<dynamic>>);
+    var contentLineByLine = (readFileAsLineByline(
+      filePath: paths.iosInfoPlist,
+    ));
     for (var i = 0; i < contentLineByLine.length; i++) {
-      if (contentLineByLine[i].contains('<key>CFBundleName</key>')) {
+      final contentLine = contentLineByLine[i] ?? '';
+      if (contentLine.contains('<key>CFBundleName</key>')) {
         return (contentLineByLine[i + 1] as String).trim().substring(5, 5);
       }
     }
+    return null;
   }
 
-  // ignore: missing_return
   Future<String?> getCurrentAndroidAppName() async {
-    var contentLineByLine = await (readFileAsLineByline(
-      filePath: androidManifestPath,
-    ) as FutureOr<List<dynamic>>);
+    var contentLineByLine = (readFileAsLineByline(
+      filePath: paths.androidManifest,
+    ));
     for (var i = 0; i < contentLineByLine.length; i++) {
-      if (contentLineByLine[i].contains('android:label')) {
+      final contentLine = contentLineByLine[i] ?? '';
+      if (contentLine.contains('android:label')) {
         return (contentLineByLine[i] as String).split('"')[1];
       }
     }
+    return null;
   }
 
   bool checkFileExists(List? fileContent) {
     return fileContent == null || fileContent.isEmpty;
   }
 
-  Future<String?> getWebAppName() async {}
+  Future<String?> getWebAppName() async {
+    return null;
+  }
 
   Future<File?> changeWebAppName(String? appName) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: webAppPath,
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.windowsApp,
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
-      Web appname could not be changed because,
-      The related file could not be found in that path:  $webAppPath
+      Windows Appname could not be changed because,
+      The related file could not be found in that path:  ${paths.windowsApp}
       ''');
       return null;
     }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
+    for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].contains('<title>') &&
           contentLineByLine[i].contains('</title>')) {
         contentLineByLine[i] = '  <title>$appName</title>';
@@ -403,70 +567,18 @@ class FileRepository {
       }
     }
     var writtenFile = await writeFile(
-      filePath: webAppPath,
+      filePath: paths.windowsApp,
       content: contentLineByLine.join('\n'),
     );
-    logger.i('Web appname changed successfully to : $appName');
+    logger.i('Windows appname changed successfully to : $appName');
     return writtenFile;
   }
 
-  Future<String?> getWindowsAppName() async {}
-
-  Future<void> changeWindowsAppName(String? appName) async {
-    await changeWindowsCppName(appName);
-    await changeWindowsRCName(appName);
-    logger.i('Windows appname changed successfully to : $appName');
+  Future<String?> getWindowsAppName() async {
+    return null;
   }
 
-  Future<void> changeWindowsCppName(String? appName) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: windowsAppPath,
-    );
-    if (checkFileExists(contentLineByLine)) {
-      logger.w('''
-      Windows appname could not be changed because,
-      The related file could not be found in that path:  $windowsAppPath
-      ''');
-      return null;
-    }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
-      if (contentLineByLine[i].contains('window.CreateAndShow')) {
-        contentLineByLine[i] =
-            contentLineByLine[i].replaceAllMapped(RegExp(r'CreateAndShow\(L"([^"]+")'), (match) { return 'CreateAndShow(L"$appName"'; });
-        break;
-      }
-    }
-    await writeFile(
-      filePath: windowsAppPath,
-      content: contentLineByLine.join('\n'),
-    );
-  }
-
-  Future<void> changeWindowsRCName(String? appName) async {
-    List? contentLineByLine = await readFileAsLineByline(
-      filePath: windowsAppRCPath,
-    );
-    if (checkFileExists(contentLineByLine)) {
-      logger.w('''
-      Windows appname could not be changed because,
-      The related file could not be found in that path:  $windowsAppRCPath
-      ''');
-      return null;
-    }
-    for (var i = 0; i < contentLineByLine!.length; i++) {
-      if (contentLineByLine[i].contains('VALUE "InternalName"')) {
-        contentLineByLine[i] = '            VALUE "InternalName", "$appName" "\\0"';
-      }
-      else if (contentLineByLine[i].contains('VALUE "FileDescription"')) {
-        contentLineByLine[i] = '            VALUE "FileDescription", "$appName" "\\0"';
-      }
-      else if (contentLineByLine[i].contains('VALUE "ProductName"')) {
-        contentLineByLine[i] = '            VALUE "ProductName", "$appName" "\\0"';
-      }
-    }
-    await writeFile(
-      filePath: windowsAppRCPath,
-      content: contentLineByLine.join('\n'),
-    );
+  Future<String?> changeWindowsAppName(String? appName) async {
+    return null;
   }
 }
