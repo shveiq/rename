@@ -77,6 +77,18 @@ Future<void> changeApplicationBuild(String? appBuild, Iterable<Platform> platfor
   }
 }
 
+Future<void> changeProvisioningProfile(String? appProvisioningProfile, Iterable<Platform> platforms) async {
+  if (platforms.isEmpty || platforms.contains(Platform.ios)) {
+    await fileRepository.changeIosProvisioningProfile(appProvisioningProfile: appProvisioningProfile);
+  }
+  if (platforms.isEmpty || platforms.contains(Platform.macOS)) {
+    await fileRepository.changeMacOsProvisioningProfile(appProvisioningProfile: appProvisioningProfile);
+  }
+  if (platforms.isEmpty || platforms.contains(Platform.android)) {
+    await fileRepository.changeAndroidProvisioningProfile(appProvisioningProfile: appProvisioningProfile);
+  }
+}
+
 Future<String?> getIosAppName() async {
   return fileRepository.getCurrentIosAppName();
 }

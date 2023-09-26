@@ -13,6 +13,7 @@ const appname = 'appname';
 const bundleId = 'bundleId';
 const appVersion = 'appversion';
 const appBuild = 'appbuild';
+const appProvisioningProfile = 'appProvisioningProfile';
 const launcherIcon = 'launcherIcon';
 const help = 'help';
 
@@ -25,6 +26,7 @@ final argParser = ArgParser()
   ..addOption(bundleId, abbr: 'b', help: 'Sets the bundle id.')
   ..addOption(appVersion, abbr: 'v', help: "Sets app's version")
   ..addOption(appBuild, abbr: 'r', help: "Set app's revision")
+  ..addOption(appProvisioningProfile, abbr: 'f', help: "Set app's provisioning profile")
   ..addFlag(
     pubspec,
     abbr: 'p',
@@ -64,6 +66,9 @@ void main(List<String> arguments) async {
     }
     if (results[appBuild] != null) {
       await rename.changeApplicationBuild(results[appBuild], platforms);
+    }
+    if (results[appProvisioningProfile] != null) {
+      await rename.changeProvisioningProfile(results[appProvisioningProfile], platforms);
     }
   } on FormatException catch (e) {
     print(e.message);

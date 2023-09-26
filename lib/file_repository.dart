@@ -649,4 +649,37 @@ class FileRepository {
   Future<String?> changeWindowsAppName(String? appName) async {
     return null;
   }
+
+  Future<File?> changeIosProvisioningProfile({String? appProvisioningProfile}) async {
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.iosProjectPbxproj,
+    );
+    if (checkFileExists(contentLineByLine)) {
+      logger.w('''
+      Ios BundleId could not be changed because,
+      The related file could not be found in that path:  ${paths.iosProjectPbxproj}
+      ''');
+      return null;
+    }
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      if (contentLineByLine[i].contains('PRODUCT_BUNDLE_IDENTIFIER')) {
+        contentLineByLine[i] = '				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "$appProvisioningProfile";';
+      }
+    }
+    var writtenFile = await writeFile(
+      filePath: paths.iosProjectPbxproj,
+      content: contentLineByLine.join('\n'),
+    );
+    logger.i('IOS Provisioning Profile changed successfully to : $appProvisioningProfile');
+    return writtenFile;
+  }
+
+  Future<File?> changeMacOsProvisioningProfile({String? appProvisioningProfile}) async {
+    return null;
+  }
+
+  Future<File?> changeAndroidProvisioningProfile({String? appProvisioningProfile}) async {
+    return null;
+  }
+
 }
