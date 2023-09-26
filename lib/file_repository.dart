@@ -662,7 +662,7 @@ class FileRepository {
       return null;
     }
     for (var i = 0; i < contentLineByLine.length; i++) {
-      if (contentLineByLine[i].contains('PRODUCT_BUNDLE_IDENTIFIER')) {
+      if (contentLineByLine[i].contains('PROVISIONING_PROFILE_SPECIFIER')) {
         contentLineByLine[i] = '				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "$appProvisioningProfile";';
       }
     }
