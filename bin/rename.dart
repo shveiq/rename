@@ -73,7 +73,7 @@ void main(List<String> arguments) async {
       await rename.changeProvisioningProfile(results[appProvisioningProfile], platforms);
     }
     if (results[firebaseGoogleAppId] != null) {
-      await rename.changeFirebaseGoogleAppId(result[firebaseGoogleAppId], platforms);
+      await rename.changeFirebaseGoogleAppId(results[firebaseGoogleAppId], platforms);
     }
   } on FormatException catch (e) {
     print(e.message);
