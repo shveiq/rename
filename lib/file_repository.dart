@@ -682,4 +682,35 @@ class FileRepository {
     return null;
   }
 
+  Future<File?> changeIosFirebaseGoogleAppId({String? firebaseGoogleAppId}) async {
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.iosProjectPbxproj,
+    );
+    if (checkFileExists(contentLineByLine)) {
+      logger.w('''
+      Ios BundleId could not be changed because,
+      The related file could not be found in that path:  ${paths.iosProjectPbxproj}
+      ''');
+      return null;
+    }
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      if (contentLineByLine[i].contains('FIREBASE_GOOGLE_APP_ID')) {
+        contentLineByLine[i] = '				FIREBASE_GOOGLE_APP_ID = "$firebaseGoogleAppId";';
+      }
+    }
+    var writtenFile = await writeFile(
+      filePath: paths.iosProjectPbxproj,
+      content: contentLineByLine.join('\n'),
+    );
+    logger.i('IOS Firebase Google App ID changed successfully to : $firebaseGoogleAppId');
+    return writtenFile;
+  }
+
+  Future<File?> changeMacOsFirebaseGoogleAppId({String? firebaseGoogleAppId}) async {
+    return null;
+  }
+
+  Future<File?> changeAndroidFirebaseGoogleAppId({String? firebaseGoogleAppId}) async {
+    return null;
+  }
 }

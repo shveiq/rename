@@ -89,6 +89,18 @@ Future<void> changeProvisioningProfile(String? appProvisioningProfile, Iterable<
   }
 }
 
+Future<void> changeFirebaseGoogleAppId(String? firebaseGoogleAppId, Iterable<Platform> platforms) async {
+  if (platforms.isEmpty || platforms.contains(Platform.ios)) {
+    await fileRepository.changeIosFirebaseGoogleAppId(firebaseGoogleAppId: firebaseGoogleAppId);
+  }
+  if (platforms.isEmpty || platforms.contains(Platform.macOS)) {
+    await fileRepository.changeMacOsFirebaseGoogleAppId(firebaseGoogleAppId: firebaseGoogleAppId);
+  }
+  if (platforms.isEmpty || platforms.contains(Platform.android)) {
+    await fileRepository.changeAndroidFirebaseGoogleAppId(firebaseGoogleAppId: firebaseGoogleAppId);
+  }
+}
+
 Future<String?> getIosAppName() async {
   return fileRepository.getCurrentIosAppName();
 }

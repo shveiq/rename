@@ -14,6 +14,7 @@ const bundleId = 'bundleId';
 const appVersion = 'appversion';
 const appBuild = 'appbuild';
 const appProvisioningProfile = 'appProvisioningProfile';
+const firebaseGoogleAppId = 'firebaseGoogleAppId';
 const launcherIcon = 'launcherIcon';
 const help = 'help';
 
@@ -27,6 +28,7 @@ final argParser = ArgParser()
   ..addOption(appVersion, abbr: 'v', help: "Sets app's version")
   ..addOption(appBuild, abbr: 'r', help: "Set app's revision")
   ..addOption(appProvisioningProfile, abbr: 'f', help: "Set app's provisioning profile")
+  ..addOption(firebaseGoogleAppId, abbr: 'g', help: "Set google app id for firebase crashlytics")
   ..addFlag(
     pubspec,
     abbr: 'p',
@@ -69,6 +71,9 @@ void main(List<String> arguments) async {
     }
     if (results[appProvisioningProfile] != null) {
       await rename.changeProvisioningProfile(results[appProvisioningProfile], platforms);
+    }
+    if (results[firebaseGoogleAppId] != null) {
+      await rename.changeFirebaseGoogleAppId(result[firebaseGoogleAppId], platforms);
     }
   } on FormatException catch (e) {
     print(e.message);
