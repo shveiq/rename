@@ -814,7 +814,7 @@ class FileRepository {
       content: contentLineByLine.join('\n'),
     );
     logger.i('In file : ${paths.firebaseConfigurationPlist}');
-    logger.i('IOS BundleId in Firebase Config changed successfully to : $firebaseGoogleAppId');
+    logger.i('IOS BundleId in Firebase Config changed successfully to : $bundleId');
     return writtenFile;
   }
 
