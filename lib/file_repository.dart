@@ -805,10 +805,12 @@ class FileRepository {
       return null;
     }
     for (var i = 0; i < contentLineByLine.length; i++) {
-      if (contentLineByLine[i].contains('BUNDLE_ID')) {
-        contentLineByLine[i] = '				BUNDLE_ID = "$bundleId";';
+      if (contentLineByLine[i].contains('<key>BUNDLE_ID</key>')) {
+        contentLineByLine[i + 1] = '\t<string>$bundleId</string>\r';
+        break;
       }
     }
+
     var writtenFile = await writeFile(
       filePath: paths.firebaseConfigurationPlist,
       content: contentLineByLine.join('\n'),
@@ -838,10 +840,12 @@ class FileRepository {
       return null;
     }
     for (var i = 0; i < contentLineByLine.length; i++) {
-      if (contentLineByLine[i].contains('GOOGLE_APP_ID')) {
-        contentLineByLine[i] = '				GOOGLE_APP_ID = "$firebaseGoogleAppId";';
+      if (contentLineByLine[i].contains('<key>GOOGLE_APP_ID</key>')) {
+        contentLineByLine[i + 1] = '\t<string>$firebaseGoogleAppId</string>\r';
+        break;
       }
     }
+
     var writtenFile = await writeFile(
       filePath: paths.firebaseConfigurationPlist,
       content: contentLineByLine.join('\n'),
