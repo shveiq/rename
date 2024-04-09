@@ -22,6 +22,7 @@ class Paths {
     required this.pubspecYaml,
     required this.webApp,
     required this.windowsApp,
+    required this.firebaseConfigurationPlist,
   });
   factory Paths.getInstance() {
     if (Platform.isMacOS || Platform.isLinux) {
@@ -42,6 +43,7 @@ class Paths {
         androidProfileManifest: 'android/app/src/profile/AndroidManifest.xml',
         androidKotlin: 'android/app/src/main/kotlin',
         webApp: 'linux/my_application.cc',
+        firebaseConfigurationPlist: 'ios/Runner/GoogleService-Info.plist',
       );
     } else {
       return Paths(
@@ -63,6 +65,7 @@ class Paths {
         '.\\android\\app\\src\\profile\\AndroidManifest.xml',
         androidKotlin: '.\\android\\app\\src\\main\\kotlin',
         webApp: '.\\linux\\my_application.cc',
+        firebaseConfigurationPlist: '.\\ios\\Runner\\GoogleService-Info.plist',
       );
     }
   }
@@ -82,6 +85,7 @@ class Paths {
   final String linuxAppCpp;
   final String webApp;
   final String windowsApp;
+  final String firebaseConfigurationPlist;
 }
 
 class FileRepository {
@@ -171,7 +175,33 @@ class FileRepository {
       filePath: paths.iosProjectPbxproj,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.iosProjectPbxproj}');
     logger.i('IOS BundleIdentifier changed successfully to : $bundleId');
+    return writtenFile;
+  }
+
+  Future<File?> changeIosFirebaseBundleId({String? bundleId}) async {
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.iosProjectPbxproj,
+    );
+    if (checkFileExists(contentLineByLine)) {
+      logger.w('''
+      Ios BundleId in Firebase Configuration could not be changed because,
+      The related file could not be found in that path:  ${paths.iosProjectPbxproj}
+      ''');
+      return null;
+    }
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      if (contentLineByLine[i].contains('PRODUCT_BUNDLE_IDENTIFIER')) {
+        contentLineByLine[i] = '				PRODUCT_BUNDLE_IDENTIFIER = $bundleId;';
+      }
+    }
+    var writtenFile = await writeFile(
+      filePath: paths.iosProjectPbxproj,
+      content: contentLineByLine.join('\n'),
+    );
+    logger.i('In file : ${paths.iosProjectPbxproj}');
+    logger.i('IOS BundleIdentifier in Firebase Configuration changed successfully to : $bundleId');
     return writtenFile;
   }
 
@@ -214,6 +244,7 @@ class FileRepository {
       filePath: paths.macosAppInfoxproj,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.macosAppInfoxproj}');
     logger.i('MacOS BundleIdentifier changed successfully to : $bundleId');
     return writtenFile;
   }
@@ -349,6 +380,7 @@ class FileRepository {
       filePath: paths.iosGeneratedConfig,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.iosGeneratedConfig}');
     logger.i('IOS Application Version changed successfully to : $appVersion');
     return writtenFile;
   }
@@ -381,6 +413,7 @@ class FileRepository {
       filePath: paths.iosGeneratedConfig,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.iosGeneratedConfig}');
     logger.i('IOS Application Revision changed successfully to : $appBuild');
     return writtenFile;
   }
@@ -446,6 +479,7 @@ class FileRepository {
       filePath: paths.linuxCMakeLists,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.linuxCMakeLists}');
     logger.i('Linux BundleIdentifier changed successfully to : $bundleId');
     return writtenFile;
   }
@@ -479,6 +513,7 @@ class FileRepository {
       filePath: paths.iosInfoPlist,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.iosInfoPlist}');
     logger.i('IOS appname changed successfully to : $appName');
     return writtenFile;
   }
@@ -512,6 +547,7 @@ class FileRepository {
       filePath: paths.iosInfoReleasePlist,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.iosInfoReleasePlist}');
     logger.i('IOS appname in Release changed successfully to : $appName');
     return writtenFile;
   }
@@ -537,6 +573,7 @@ class FileRepository {
       filePath: paths.macosAppInfoxproj,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.macosAppInfoxproj}');
     logger.i('MacOS appname changed successfully to : $appName');
     return writtenFile;
   }
@@ -562,6 +599,7 @@ class FileRepository {
       filePath: paths.androidManifest,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.androidManifest}');
     logger.i('Android appname changed successfully to : $appName');
     return writtenFile;
   }
@@ -614,6 +652,7 @@ class FileRepository {
         return null;
       }
     }
+    logger.i('In file : ${paths.linuxCMakeLists}');
     logger.i('Linux appname changed successfully to : $appName');
     return writtenFile;
   }
@@ -675,6 +714,7 @@ class FileRepository {
       filePath: paths.windowsApp,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.windowsApp}');
     logger.i('Windows appname changed successfully to : $appName');
     return writtenFile;
   }
@@ -693,7 +733,7 @@ class FileRepository {
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
-      Ios BundleId could not be changed because,
+      IOS Provisioning Profile could not be changed because,
       The related file could not be found in that path:  ${paths.iosProjectPbxproj}
       ''');
       return null;
@@ -707,6 +747,7 @@ class FileRepository {
       filePath: paths.iosProjectPbxproj,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.iosProjectPbxproj}');
     logger.i('IOS Provisioning Profile changed successfully to : $appProvisioningProfile');
     return writtenFile;
   }
@@ -725,7 +766,7 @@ class FileRepository {
     );
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
-      Ios BundleId could not be changed because,
+      IOS Firebase Google App ID could not be changed because,
       The related file could not be found in that path:  ${paths.iosProjectPbxproj}
       ''');
       return null;
@@ -739,6 +780,7 @@ class FileRepository {
       filePath: paths.iosProjectPbxproj,
       content: contentLineByLine.join('\n'),
     );
+    logger.i('In file : ${paths.iosProjectPbxproj}');
     logger.i('IOS Firebase Google App ID changed successfully to : $firebaseGoogleAppId');
     return writtenFile;
   }
@@ -748,6 +790,72 @@ class FileRepository {
   }
 
   Future<File?> changeAndroidFirebaseGoogleAppId({String? firebaseGoogleAppId}) async {
+    return null;
+  }
+
+  Future<File?> changeIosFirebaseBundleIdInConfig({String? bundleId}) async {
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.firebaseConfigurationPlist,
+    );
+    if (checkFileExists(contentLineByLine)) {
+      logger.w('''
+      IOS BundleId in Firebase Config could not be changed because,
+      The related file could not be found in that path:  ${paths.firebaseConfigurationPlist}
+      ''');
+      return null;
+    }
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      if (contentLineByLine[i].contains('BUNDLE_ID')) {
+        contentLineByLine[i] = '				BUNDLE_ID = "$bundleId";';
+      }
+    }
+    var writtenFile = await writeFile(
+      filePath: paths.firebaseConfigurationPlist,
+      content: contentLineByLine.join('\n'),
+    );
+    logger.i('In file : ${paths.firebaseConfigurationPlist}');
+    logger.i('IOS BundleId in Firebase Config changed successfully to : $firebaseGoogleAppId');
+    return writtenFile;
+  }
+
+  Future<File?> changeMacOsFirebaseBundleIdInConfig({String? bundleId})  async {
+    return null;
+  }
+
+  Future<File?> changeAndroidFirebaseBundleIdInConfig({String? bundleId})  async {
+    return null;
+  }
+
+  Future<File?> changeIosFirebaseGoogleAppIdInConfig({String? firebaseGoogleAppId}) async {
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.firebaseConfigurationPlist,
+    );
+    if (checkFileExists(contentLineByLine)) {
+      logger.w('''
+      IOS Google Api Id in Firebase Config could not be changed because,
+      The related file could not be found in that path:  ${paths.firebaseConfigurationPlist}
+      ''');
+      return null;
+    }
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      if (contentLineByLine[i].contains('GOOGLE_APP_ID')) {
+        contentLineByLine[i] = '				GOOGLE_APP_ID = "$firebaseGoogleAppId";';
+      }
+    }
+    var writtenFile = await writeFile(
+      filePath: paths.firebaseConfigurationPlist,
+      content: contentLineByLine.join('\n'),
+    );
+    logger.i('In file : ${paths.firebaseConfigurationPlist}');
+    logger.i('IOS Google Api Id in Firebase Config changed successfully to : $firebaseGoogleAppId');
+    return writtenFile;
+  }
+
+  Future<File?> changeMacOsFirebaseGoogleAppIdInConfig({String? firebaseGoogleAppId}) async {
+    return null;
+  }
+
+  Future<File?> changeAndroidFirebaseGoogleAppIdInConfig({String? firebaseGoogleAppId}) async {
     return null;
   }
 }

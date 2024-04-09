@@ -42,6 +42,8 @@ Future<void> changePubspec(final String appName) async {
 Future changeBundleId(String? bundleId, Iterable<Platform> platforms) async {
   if (platforms.isEmpty || platforms.contains(Platform.ios)) {
     await fileRepository.changeIosBundleId(bundleId: bundleId);
+    await fileRepository.changeIosFirebaseBundleId(bundleId: bundleId);
+    await fileRepository.changeIosFirebaseBundleIdInConfig(bundleId: bundleId);
   }
   if (platforms.isEmpty || platforms.contains(Platform.macOS)) {
     await fileRepository.changeMacOsBundleId(bundleId: bundleId);
@@ -93,6 +95,7 @@ Future<void> changeProvisioningProfile(String? appProvisioningProfile, Iterable<
 Future<void> changeFirebaseGoogleAppId(String? firebaseGoogleAppId, Iterable<Platform> platforms) async {
   if (platforms.isEmpty || platforms.contains(Platform.ios)) {
     await fileRepository.changeIosFirebaseGoogleAppId(firebaseGoogleAppId: firebaseGoogleAppId);
+    await fileRepository.changeIosFirebaseGoogleAppIdInConfig(firebaseGoogleAppId: firebaseGoogleAppId);
   }
   if (platforms.isEmpty || platforms.contains(Platform.macOS)) {
     await fileRepository.changeMacOsFirebaseGoogleAppId(firebaseGoogleAppId: firebaseGoogleAppId);
