@@ -73,6 +73,7 @@ class Paths {
   final String androidKotlin;
   final String pubspecYaml;
   final String iosInfoPlist;
+  final String iosInfoReleasePlist;
   final String iosProjectPbxproj;
   final String iosGeneratedConfig;
   final String macosAppInfoxproj;
