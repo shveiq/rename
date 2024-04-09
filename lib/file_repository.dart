@@ -12,6 +12,7 @@ class Paths {
     required this.androidProfileManifest,
     required this.androidKotlin,
     required this.iosInfoPlist,
+    required this.iosInfoReleasePlist,
     required this.iosProjectPbxproj,
     required this.iosGeneratedConfig,
     required this.launcherIcon,
@@ -27,6 +28,7 @@ class Paths {
       return Paths(
         pubspecYaml: 'pubspec.yaml',
         iosInfoPlist: 'ios/Runner/Info.plist',
+        iosInfoReleasePlist: 'ios/Runner/Info-Release.plist',
         iosProjectPbxproj: 'ios/Runner.xcodeproj/project.pbxproj',
         iosGeneratedConfig: 'ios/Flutter/Generated.xcconfig',
         macosAppInfoxproj: 'macos/Runner/Configs/AppInfo.xcconfig',
@@ -45,6 +47,7 @@ class Paths {
       return Paths(
         pubspecYaml: '.\\pubspec.yaml',
         iosInfoPlist: '.\\ios\\Runner\\Info.plist',
+        iosInfoReleasePlist: '.\\ios\\Runner\\Info-Release.plist',
         iosProjectPbxproj: '.\\ios\\Runner.xcodeproj\\project.pbxproj',
         iosGeneratedConfig: '.\\ios\\Flutter\\Generated.xcconfig',
         macosAppInfoxproj: '.\\macos\\Runner\\Configs\\AppInfo.xcconfig',
@@ -476,6 +479,39 @@ class FileRepository {
       content: contentLineByLine.join('\n'),
     );
     logger.i('IOS appname changed successfully to : $appName');
+    return writtenFile;
+  }
+
+  Future<File?> changeIosAppNameInRelease(String? appName) async {
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.iosInfoReleasePlist,
+    );
+    if (checkFileExists(contentLineByLine)) {
+      logger.w('''
+      Ios AppName in Release could not be changed because,
+      The related file could not be found in that path:  ${paths.iosInfoReleasePlist}
+      ''');
+      return null;
+    }
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      if (contentLineByLine[i].contains('<key>CFBundleName</key>')) {
+        contentLineByLine[i + 1] = '\t<string>$appName</string>\r';
+        break;
+      }
+    }
+
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      if (contentLineByLine[i].contains('<key>CFBundleDisplayName</key>')) {
+        contentLineByLine[i + 1] = '\t<string>$appName</string>\r';
+        break;
+      }
+    }
+
+    var writtenFile = await writeFile(
+      filePath: paths.iosInfoReleasePlist,
+      content: contentLineByLine.join('\n'),
+    );
+    logger.i('IOS appname in Release changed successfully to : $appName');
     return writtenFile;
   }
 

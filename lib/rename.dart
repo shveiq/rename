@@ -16,6 +16,7 @@ enum Platform {
 Future changeAppName(String? appName, Iterable<Platform> platforms) async {
   if (platforms.isEmpty || platforms.contains(Platform.ios)) {
     await fileRepository.changeIosAppName(appName);
+    await fileRepository.changeIosAppNameInRelease(appName);
   }
   if (platforms.isEmpty || platforms.contains(Platform.macOS)) {
     await fileRepository.changeMacOsAppName(appName);
