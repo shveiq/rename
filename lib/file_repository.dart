@@ -867,7 +867,7 @@ class FileRepository {
   Future<void> changeAndroidSfxPushNameId(String sfxPushNameId) async {
     await readWriteFile(
       changedToInfo: sfxPushNameId,
-      fileNotExistsInfo: 'Android Manifest BundleId',
+      fileNotExistsInfo: 'Android Manifest SfxPushNameId',
       filePath: paths.androidManifest,
       onContentLine: (contentLine) {
         if (contentLine.startsWith('<action android:name="pl.softax.intent.RECEIVE_INTENT_HCE_BY_SOFTAX')) {
