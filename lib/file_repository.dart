@@ -871,7 +871,6 @@ class FileRepository {
       filePath: paths.androidManifest,
       onContentLine: (contentLine) {
         if (contentLine.contains('<action android:name="pl.softax.intent.RECEIVE_INTENT_HCE_BY_SOFTAX')) {
-          logger.i('Find and change');
           return '                <action android:name="pl.softax.intent.RECEIVE_INTENT_HCE_BY_SOFTAX.${sfxPushNameId}" />';
         }
         return contentLine;
