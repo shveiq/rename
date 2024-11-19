@@ -59,10 +59,8 @@ class Paths {
         windowsApp: '.\\web\\index.html',
         androidManifest: '.\\android\\app\\src\\main\\AndroidManifest.xml',
         androidAppBuildGradle: '.\\android\\app\\build.gradle',
-        androidDebugManifest:
-        '.\\android\\app\\src\\debug\\AndroidManifest.xml',
-        androidProfileManifest:
-        '.\\android\\app\\src\\profile\\AndroidManifest.xml',
+        androidDebugManifest: '.\\android\\app\\src\\debug\\AndroidManifest.xml',
+        androidProfileManifest: '.\\android\\app\\src\\profile\\AndroidManifest.xml',
         androidKotlin: '.\\android\\app\\src\\main\\kotlin',
         webApp: '.\\linux\\my_application.cc',
         firebaseConfigurationPlist: '.\\ios\\Runner\\GoogleService-Info.plist',
@@ -327,8 +325,7 @@ class FileRepository {
         final fileName = file.path.split('/').last;
         if (type == FileSystemEntityType.directory) {
           return findKotlinActivityPath(Directory(file.path).listSync());
-        } else if (type == FileSystemEntityType.file &&
-            fileName == 'MainActivity.kt') {
+        } else if (type == FileSystemEntityType.file && fileName == 'MainActivity.kt') {
           return file.path;
         }
       }
@@ -616,8 +613,7 @@ class FileRepository {
       return false;
     }
     for (var i = 0; i < contentLineByLine.length; i++) {
-      contentLineByLine[i] =
-          contentLineByLine[i].replaceAll(oldAppName, appName);
+      contentLineByLine[i] = contentLineByLine[i].replaceAll(oldAppName, appName);
     }
     return true;
   }
@@ -636,9 +632,7 @@ class FileRepository {
     String? oldAppName;
     for (var i = 0; i < contentLineByLine.length; i++) {
       if (contentLineByLine[i].startsWith('set(BINARY_NAME')) {
-        oldAppName = RegExp(r'set\(BINARY_NAME "(\w+)"\)')
-            .firstMatch(contentLineByLine[i])
-            ?.group(1);
+        oldAppName = RegExp(r'set\(BINARY_NAME "(\w+)"\)').firstMatch(contentLineByLine[i])?.group(1);
         contentLineByLine[i] = 'set(BINARY_NAME \"$appName\")';
         break;
       }
@@ -704,8 +698,7 @@ class FileRepository {
       return null;
     }
     for (var i = 0; i < contentLineByLine.length; i++) {
-      if (contentLineByLine[i].contains('<title>') &&
-          contentLineByLine[i].contains('</title>')) {
+      if (contentLineByLine[i].contains('<title>') && contentLineByLine[i].contains('</title>')) {
         contentLineByLine[i] = '  <title>$appName</title>';
         break;
       }
@@ -820,11 +813,11 @@ class FileRepository {
     return writtenFile;
   }
 
-  Future<File?> changeMacOsFirebaseBundleIdInConfig({String? bundleId})  async {
+  Future<File?> changeMacOsFirebaseBundleIdInConfig({String? bundleId}) async {
     return null;
   }
 
-  Future<File?> changeAndroidFirebaseBundleIdInConfig({String? bundleId})  async {
+  Future<File?> changeAndroidFirebaseBundleIdInConfig({String? bundleId}) async {
     return null;
   }
 
@@ -861,5 +854,27 @@ class FileRepository {
 
   Future<File?> changeAndroidFirebaseGoogleAppIdInConfig({String? firebaseGoogleAppId}) async {
     return null;
+  }
+
+  Future<void> changeIOSSfxPushNameId(String sfxPushNameId) async {
+    return;
+  }
+
+  Future<void> changeMacOSSfxPushNameId(String sfxPushNameId) async {
+    return;
+  }
+
+  Future<void> changeAndroidSfxPushNameId(String sfxPushNameId) async {
+    await readWriteFile(
+      changedToInfo: sfxPushNameId,
+      fileNotExistsInfo: 'Android Manifest BundleId',
+      filePath: paths.androidManifest,
+      onContentLine: (contentLine) {
+        if (contentLine.startsWith('<action android:name="pl.softax.intent.RECEIVE_INTENT_HCE_BY_SOFTAX')) {
+          return '                <action android:name="pl.softax.intent.RECEIVE_INTENT_HCE_BY_SOFTAX.${sfxPushNameId}" />';
+        }
+        return contentLine;
+      },
+    );
   }
 }

@@ -15,6 +15,7 @@ const appVersion = 'appversion';
 const appBuild = 'appbuild';
 const appProvisioningProfile = 'appProvisioningProfile';
 const firebaseGoogleAppId = 'firebaseGoogleAppId';
+const sfxPushNameId = 'sfxPushNameId';
 const launcherIcon = 'launcherIcon';
 const help = 'help';
 
@@ -25,10 +26,11 @@ final argParser = ArgParser()
       help: 'Set which platforms to target.')
   ..addOption(appname, abbr: 'a', help: 'Sets the name of the app.')
   ..addOption(bundleId, abbr: 'b', help: 'Sets the bundle id.')
-  ..addOption(appVersion, abbr: 'v', help: "Sets app's version")
-  ..addOption(appBuild, abbr: 'r', help: "Set app's revision")
-  ..addOption(appProvisioningProfile, abbr: 'f', help: "Set app's provisioning profile")
-  ..addOption(firebaseGoogleAppId, abbr: 'g', help: "Set google app id for firebase crashlytics")
+  ..addOption(appVersion, abbr: 'v', help: "Sets app's version.")
+  ..addOption(appBuild, abbr: 'r', help: "Set app's revision.")
+  ..addOption(appProvisioningProfile, abbr: 'f', help: "Set app's provisioning profile.")
+  ..addOption(firebaseGoogleAppId, abbr: 'g', help: "Set google app id for firebase id.")
+  ..addOption(sfxPushNameId, abbr: 's', help: "Set sfx push name.")
   ..addFlag(
     pubspec,
     abbr: 'p',
@@ -74,6 +76,9 @@ void main(List<String> arguments) async {
     }
     if (results[firebaseGoogleAppId] != null) {
       await rename.changeFirebaseGoogleAppId(results[firebaseGoogleAppId], platforms);
+    }
+    if (results[sfxPushNameId] != null) {
+      await rename.changeSfxPushNameId(results[sfxPushNameId], platforms);
     }
   } on FormatException catch (e) {
     print(e.message);
