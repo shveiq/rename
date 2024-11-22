@@ -105,6 +105,18 @@ Future<void> changeFirebaseGoogleAppId(String? firebaseGoogleAppId, Iterable<Pla
   }
 }
 
+Future<void> changeFirebaseStorageBucket(String? firebaseStorageBucket, Iterable<Platform> platforms) async {
+  if (platforms.isEmpty || platforms.contains(Platform.ios)) {
+    await fileRepository.changeIosFirebaseStorageBucket(firebaseStorageBucket: firebaseStorageBucket);
+  }
+  if (platforms.isEmpty || platforms.contains(Platform.macOS)) {
+    await fileRepository.changeMacOsFirebaseStorageBucket(firebaseStorageBucket: firebaseStorageBucket);
+  }
+  if (platforms.isEmpty || platforms.contains(Platform.android)) {
+    await fileRepository.changeAndroidFirebaseStorageBucket(firebaseStorageBucket: firebaseStorageBucket);
+  }
+}
+
 Future<void> changeSfxPushNameId(String sfxPushNameId, Iterable<Platform> platforms) async {
   if (platforms.isEmpty || platforms.contains(Platform.ios)) {
     await fileRepository.changeIOSSfxPushNameId(sfxPushNameId);

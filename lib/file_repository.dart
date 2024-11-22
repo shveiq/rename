@@ -856,6 +856,41 @@ class FileRepository {
     return null;
   }
 
+  Future<File?> changeIosFirebaseStorageBucket({String? firebaseStorageBucket}) async {
+    List? contentLineByLine = readFileAsLineByline(
+      filePath: paths.firebaseConfigurationPlist,
+    );
+    if (checkFileExists(contentLineByLine)) {
+      logger.w('''
+      IOS Google Api Id in Firebase Config could not be changed because,
+      The related file could not be found in that path:  ${paths.firebaseConfigurationPlist}
+      ''');
+      return null;
+    }
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      if (contentLineByLine[i].contains('<key>STORAGE_BUCKET</key>')) {
+        contentLineByLine[i + 1] = '\t<string>$firebaseStorageBucket</string>\r';
+        break;
+      }
+    }
+
+    var writtenFile = await writeFile(
+      filePath: paths.firebaseConfigurationPlist,
+      content: contentLineByLine.join('\n'),
+    );
+    logger.i('In file : ${paths.firebaseConfigurationPlist}');
+    logger.i('IOS Google Api Id in Firebase Config changed successfully to : $firebaseStorageBucket');
+    return writtenFile;
+  }
+
+  Future<void> changeMacOsFirebaseStorageBucket({String? firebaseStorageBucket}) async {
+    return;
+  }
+
+  Future<void> changeAndroidFirebaseStorageBucket({String? firebaseStorageBucket}) async {
+    return;
+  }
+
   Future<void> changeIOSSfxPushNameId(String sfxPushNameId) async {
     return;
   }
