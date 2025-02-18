@@ -323,7 +323,23 @@ class FileRepository {
       filePathSecond: paths.androidAppBuildGradleKts,
       onContentLine: (contentLine) {
         if (contentLine.contains('applicationId')) {
-          return '        applicationId \"$bundleId\"';
+          if (contentLine.contains(';')) {
+            return '        applicationId \"$bundleId\"';
+          } else {
+            return '        applicationId = \"$bundleId\"';
+          }
+        }
+        return contentLine;
+      },
+    );
+
+    await readWriteFile(
+      changedToInfo: bundleId,
+      fileNotExistsInfo: 'Android Gradle Namespace',
+      filePath: paths.androidAppBuildGradleKts,
+      onContentLine: (contentLine) {
+        if (contentLine.contains('namespace')) {
+          return '        namespace = \"$bundleId\"';
         }
         return contentLine;
       },
