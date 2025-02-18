@@ -150,15 +150,12 @@ class FileRepository {
     var contentLineByLine = readFileAsLineByline(
       filePath: filePathFirst,
     );
-    logger.w("contentLineByLine $contentLineByLine");
     if (checkFileExists(contentLineByLine)) {
-      logger.w("wczytaj drugi plik");
       contentLineByLine = readFileAsLineByline(
         filePath: filePathSecond,
       );
       currentFilePath = filePathSecond;
     } else {
-      logger.w("nie wczytuje drugiego pliku");
       currentFilePath = filePathFirst;
     }
     if (throwIfNotExists && checkFileExists(contentLineByLine)) {
@@ -172,7 +169,6 @@ class FileRepository {
       final contentLine = contentLineByLine[i] ?? '';
       contentLineByLine[i] = onContentLine(contentLine);
     }
-    logger.w("currentFilePath $currentFilePath");
     await writeFile(
       filePath: currentFilePath!,
       content: contentLineByLine.join('\n'),
