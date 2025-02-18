@@ -146,6 +146,8 @@ class FileRepository {
     required String changedToInfo,
     bool throwIfNotExists = true,
   }) async {
+    logger.w("filePathFirst $filePathFirst");
+    logger.w("filePathSecond $filePathSecond");
     String? currentFilePath = null;
     var contentLineByLine = readFileAsLineByline(
       filePath: filePathFirst,
@@ -322,8 +324,6 @@ class FileRepository {
 
   Future<void> changeAndroidBundleId({String? bundleId}) async {
     if (bundleId == null) return;
-
-    logger.w('Path ${paths.androidAppBuildGradleKts} ${paths.androidAppBuildGradle} androidAppBuildGradlePath');
 
     await readWriteTwoFiles(
       changedToInfo: bundleId,
