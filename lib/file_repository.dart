@@ -150,6 +150,7 @@ class FileRepository {
     var contentLineByLine = readFileAsLineByline(
       filePath: filePathFirst,
     );
+    logger.w("contentLineByLine $contentLineByLine");
     if (checkFileExists(contentLineByLine)) {
       contentLineByLine = readFileAsLineByline(
         filePath: filePathSecond,
@@ -321,6 +322,8 @@ class FileRepository {
 
   Future<void> changeAndroidBundleId({String? bundleId}) async {
     if (bundleId == null) return;
+
+    logger.w('Path ${paths}');
 
     await readWriteTwoFiles(
       changedToInfo: bundleId,
