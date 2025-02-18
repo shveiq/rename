@@ -146,20 +146,20 @@ class FileRepository {
     required String changedToInfo,
     bool throwIfNotExists = true,
   }) async {
-    logger.w("filePathFirst $filePathFirst");
-    logger.w("filePathSecond $filePathSecond");
     String? currentFilePath = null;
     var contentLineByLine = readFileAsLineByline(
       filePath: filePathFirst,
     );
     logger.w("contentLineByLine $contentLineByLine");
     if (checkFileExists(contentLineByLine)) {
+      logger.w("wczytaj drugi plik");
       contentLineByLine = readFileAsLineByline(
         filePath: filePathSecond,
       );
+      currentFilePath = filePathSecond;
     } else {
+      logger.w("nie wczytuje drugiego pliku");
       currentFilePath = filePathFirst;
-      logger.w("currentFilePath $filePathFirst");
     }
     if (throwIfNotExists && checkFileExists(contentLineByLine)) {
       logger.w('''
@@ -167,11 +167,6 @@ class FileRepository {
       The related file could not be found in that path:  $filePathFirst or $filePathSecond
       ''');
       return null;
-    } else {
-      if (currentFilePath != null) {
-        currentFilePath = filePathSecond;
-        logger.w("currentFilePath $filePathSecond");
-      }
     }
     for (var i = 0; i < contentLineByLine.length; i++) {
       final contentLine = contentLineByLine[i] ?? '';
