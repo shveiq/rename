@@ -7,6 +7,7 @@ import 'package:recase/recase.dart';
 class Paths {
   Paths({
     required this.androidAppBuildGradle,
+    required this.androidAppBuildGradleKts,
     required this.androidDebugManifest,
     required this.androidManifest,
     required this.androidProfileManifest,
@@ -39,6 +40,7 @@ class Paths {
         windowsApp: 'web/index.html',
         androidManifest: 'android/app/src/main/AndroidManifest.xml',
         androidAppBuildGradle: 'android/app/build.gradle',
+        androidAppBuildGradleKts: 'android/app/build.gradle.kts',
         androidDebugManifest: 'android/app/src/debug/AndroidManifest.xml',
         androidProfileManifest: 'android/app/src/profile/AndroidManifest.xml',
         androidKotlin: 'android/app/src/main/kotlin',
@@ -59,6 +61,7 @@ class Paths {
         windowsApp: '.\\web\\index.html',
         androidManifest: '.\\android\\app\\src\\main\\AndroidManifest.xml',
         androidAppBuildGradle: '.\\android\\app\\build.gradle',
+        androidAppBuildGradleKts: '.\\android\\app\\build.gradle.kts',
         androidDebugManifest: '.\\android\\app\\src\\debug\\AndroidManifest.xml',
         androidProfileManifest: '.\\android\\app\\src\\profile\\AndroidManifest.xml',
         androidKotlin: '.\\android\\app\\src\\main\\kotlin',
@@ -71,6 +74,7 @@ class Paths {
   final String androidDebugManifest;
   final String androidProfileManifest;
   final String androidAppBuildGradle;
+  final String androidAppBuildGradleKts;
   final String androidKotlin;
   final String pubspecYaml;
   final String iosInfoPlist;
@@ -129,6 +133,47 @@ class FileRepository {
     }
     await writeFile(
       filePath: filePath,
+      content: contentLineByLine.join('\n'),
+    );
+    logger.i('$fileNotExistsInfo changed successfully to : $changedToInfo');
+  }
+
+  Future<void> readWriteTwoFiles({
+    required String filePathFirst,
+    required String filePathSecond,
+    required String Function(String content) onContentLine,
+    required String fileNotExistsInfo,
+    required String changedToInfo,
+    bool throwIfNotExists = true,
+  }) async {
+    String? currentFilePath = null;
+    var contentLineByLine = readFileAsLineByline(
+      filePath: filePathFirst,
+    );
+    if (checkFileExists(contentLineByLine)) {
+      contentLineByLine = readFileAsLineByline(
+        filePath: filePathSecond,
+      );
+    } else {
+      currentFilePath = filePathFirst;
+    }
+    if (throwIfNotExists && checkFileExists(contentLineByLine)) {
+      logger.w('''
+      $fileNotExistsInfo could not be changed because,
+      The related file could not be found in that path:  $filePathFirst or $filePathSecond
+      ''');
+      return null;
+    } else {
+      if (currentFilePath != null) {
+        currentFilePath = filePathSecond;
+      }
+    }
+    for (var i = 0; i < contentLineByLine.length; i++) {
+      final contentLine = contentLineByLine[i] ?? '';
+      contentLineByLine[i] = onContentLine(contentLine);
+    }
+    await writeFile(
+      filePath: currentFilePath!,
       content: contentLineByLine.join('\n'),
     );
     logger.i('$fileNotExistsInfo changed successfully to : $changedToInfo');
@@ -249,12 +294,17 @@ class FileRepository {
 
   Future<String?> getAndroidBundleId() async {
     List? contentLineByLine = readFileAsLineByline(
-      filePath: 'androidAppBuildGradlePath',
+      filePath: paths.androidAppBuildGradle,
     );
+    if (checkFileExists(contentLineByLine)) {
+      contentLineByLine = readFileAsLineByline(
+        filePath: paths.androidAppBuildGradleKts,
+      );
+    }
     if (checkFileExists(contentLineByLine)) {
       logger.w('''
       Android BundleId could not be changed because,
-      The related file could not be found in that path:  ${paths.androidAppBuildGradle}
+      The related file could not be found in that path:  ${paths.androidAppBuildGradle} or ${paths.androidAppBuildGradleKts}
       ''');
       return null;
     }
@@ -269,10 +319,11 @@ class FileRepository {
   Future<void> changeAndroidBundleId({String? bundleId}) async {
     if (bundleId == null) return;
 
-    await readWriteFile(
+    await readWriteTwoFiles(
       changedToInfo: bundleId,
       fileNotExistsInfo: 'Android Gradle BundleId',
-      filePath: paths.androidAppBuildGradle,
+      filePathFirst: paths.androidAppBuildGradle,
+      filePathSecond: paths.androidAppBuildGradleKts,
       onContentLine: (contentLine) {
         if (contentLine.contains('applicationId')) {
           return '        applicationId \"$bundleId\"';
