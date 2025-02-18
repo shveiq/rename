@@ -323,7 +323,7 @@ class FileRepository {
   Future<void> changeAndroidBundleId({String? bundleId}) async {
     if (bundleId == null) return;
 
-    logger.w('Path ${paths}');
+    logger.w('Path ${paths.androidAppBuildGradleKts} ${paths.androidAppBuildGradle} androidAppBuildGradlePath');
 
     await readWriteTwoFiles(
       changedToInfo: bundleId,
