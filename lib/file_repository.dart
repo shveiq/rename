@@ -156,6 +156,7 @@ class FileRepository {
       );
     } else {
       currentFilePath = filePathFirst;
+      logger.w("currentFilePath $filePathFirst");
     }
     if (throwIfNotExists && checkFileExists(contentLineByLine)) {
       logger.w('''
@@ -166,12 +167,14 @@ class FileRepository {
     } else {
       if (currentFilePath != null) {
         currentFilePath = filePathSecond;
+        logger.w("currentFilePath $filePathSecond");
       }
     }
     for (var i = 0; i < contentLineByLine.length; i++) {
       final contentLine = contentLineByLine[i] ?? '';
       contentLineByLine[i] = onContentLine(contentLine);
     }
+    logger.w("currentFilePath $currentFilePath");
     await writeFile(
       filePath: currentFilePath!,
       content: contentLineByLine.join('\n'),
