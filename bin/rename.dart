@@ -74,7 +74,7 @@ void main(List<String> arguments) async {
       await rename.changeApplicationBuild(results[appBuild], platforms);
     }
     if (results[appVersionAndBuild] != null) {
-      await rename.changePubspecVersion(results[appVersionAndBuild], platforms);
+      await rename.changePubspecVersion(results[appVersionAndBuild]);
     }
     if (results[appProvisioningProfile] != null) {
       await rename.changeProvisioningProfile(results[appProvisioningProfile], platforms);
