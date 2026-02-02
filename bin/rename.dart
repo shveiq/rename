@@ -12,6 +12,7 @@ const target = 'target';
 const appname = 'appname';
 const bundleId = 'bundleId';
 const appVersion = 'appversion';
+const appVersionAndBuild = 'appversionandbuild';
 const appBuild = 'appbuild';
 const appProvisioningProfile = 'appProvisioningProfile';
 const firebaseGoogleAppId = 'firebaseGoogleAppId';
@@ -25,6 +26,7 @@ final argParser = ArgParser()
       abbr: 't', allowed: [android, macOS, ios, linux, web], help: 'Set which platforms to target.')
   ..addOption(appname, abbr: 'a', help: 'Sets the name of the app.')
   ..addOption(bundleId, abbr: 'b', help: 'Sets the bundle id.')
+  ..addOption(appVersionAndBuild, abbr: 'j', help: "Sets app's version and build in pubspec.")
   ..addOption(appVersion, abbr: 'v', help: "Sets app's version.")
   ..addOption(appBuild, abbr: 'r', help: "Set app's revision.")
   ..addOption(appProvisioningProfile, abbr: 'f', help: "Set app's provisioning profile.")
@@ -70,6 +72,9 @@ void main(List<String> arguments) async {
     }
     if (results[appBuild] != null) {
       await rename.changeApplicationBuild(results[appBuild], platforms);
+    }
+    if (results[appVersionAndBuild] != null) {
+      await rename.changePubspecVersion(results[appVersionAndBuild], platforms);
     }
     if (results[appProvisioningProfile] != null) {
       await rename.changeProvisioningProfile(results[appProvisioningProfile], platforms);
