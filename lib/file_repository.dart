@@ -455,6 +455,18 @@ class FileRepository {
   }
 
   Future<File?> changeIosApplicationBuild({String? appBuild}) async {
+    await readWriteFile(
+      changedToInfo: appName,
+      fileNotExistsInfo: 'pubspec.yaml',
+      filePath: paths.pubspecYaml,
+      onContentLine: (contentLine) {
+        if (contentLine.startsWith('version:')) {
+          return 'version: ${appBuild}';
+        }
+        return contentLine;
+      },
+    );
+
     List? contentLineByLine = readFileAsLineByline(
       filePath: paths.iosGeneratedConfig,
     );
@@ -484,6 +496,17 @@ class FileRepository {
   }
 
   Future<void> changeAndroidApplicationBuild({String? appBuild}) async {
+    await readWriteFile(
+      changedToInfo: appName,
+      fileNotExistsInfo: 'pubspec.yaml',
+      filePath: paths.pubspecYaml,
+      onContentLine: (contentLine) {
+        if (contentLine.startsWith('version:')) {
+          return 'version: ${appBuild}';
+        }
+        return contentLine;
+      },
+    );
     return null;
   }
 
