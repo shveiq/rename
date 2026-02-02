@@ -456,7 +456,7 @@ class FileRepository {
 
   Future<File?> changeIosApplicationBuild({String? appBuild}) async {
     await readWriteFile(
-      changedToInfo: appBuild,
+      changedToInfo: appBuild ?? "1.0",
       fileNotExistsInfo: 'pubspec.yaml',
       filePath: paths.pubspecYaml,
       onContentLine: (contentLine) {
@@ -512,7 +512,7 @@ class FileRepository {
 
   Future<void> changePubspec({required final String appName}) async {
     await readWriteFile(
-      changedToInfo: appName,
+      changedToInfo: appName ?? "1.0",
       fileNotExistsInfo: 'pubspec.yaml',
       filePath: paths.pubspecYaml,
       onContentLine: (contentLine) {
