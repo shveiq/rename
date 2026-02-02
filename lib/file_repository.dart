@@ -455,18 +455,6 @@ class FileRepository {
   }
 
   Future<File?> changeIosApplicationBuild({String? appBuild}) async {
-    await readWriteFile(
-      changedToInfo: appBuild ?? "1.0",
-      fileNotExistsInfo: 'pubspec.yaml',
-      filePath: paths.pubspecYaml,
-      onContentLine: (contentLine) {
-        if (contentLine.startsWith('version:')) {
-          return 'version: ${appBuild}';
-        }
-        return contentLine;
-      },
-    );
-
     List? contentLineByLine = readFileAsLineByline(
       filePath: paths.iosGeneratedConfig,
     );
@@ -496,17 +484,6 @@ class FileRepository {
   }
 
   Future<void> changeAndroidApplicationBuild({String? appBuild}) async {
-    await readWriteFile(
-      changedToInfo: appBuild ?? "1.0",
-      fileNotExistsInfo: 'pubspec.yaml',
-      filePath: paths.pubspecYaml,
-      onContentLine: (contentLine) {
-        if (contentLine.startsWith('version:')) {
-          return 'version: ${appBuild}';
-        }
-        return contentLine;
-      },
-    );
     return null;
   }
 
@@ -524,6 +501,20 @@ class FileRepository {
     );
   }
 
+  Future<void> changePubspecVersion({required final String appVersion}) async {
+    await readWriteFile(
+      changedToInfo: appVersion,
+      fileNotExistsInfo: 'pubspec.yaml',
+      filePath: paths.pubspecYaml,
+      onContentLine: (contentLine) {
+        if (contentLine.startsWith('version:')) {
+          return 'version: ${appVersion}';
+        }
+        return contentLine;
+      },
+    );
+  }
+  
   Future<String?> getLinuxBundleId() async {
     List? contentLineByLine = readFileAsLineByline(
       filePath: paths.linuxCMakeLists,
